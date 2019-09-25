@@ -1,45 +1,27 @@
-functor
-export
-   New NewFromRecord
-prepare
-   RemoveAll = Dictionary.removeAll
-   Keys      = Dictionary.keys
-   Items     = Dictionary.items
-   Entries   = Dictionary.entries
-   IsEmpty   = Dictionary.isEmpty
-   Remove    = Dictionary.remove
-   Member    = Dictionary.member
-   Clone     = Dictionary.clone
-   ToRecord  = Dictionary.toRecord
-   ToDict    = Record.toDictionary
-   fun {DictPack D}
-      fun  {DictGet     K  } D.K end
-      proc {DictPut     K V} D.K := V end
-      fun  {DictCondGet K V} {CondSelect D K V} end
-      proc {DictReset      } {RemoveAll D} end
-      fun  {DictKeys       } {Keys D} end
-      fun  {DictItems      } {Items D} end
-      fun  {DictEntries    } {Entries D} end
-      fun  {DictIsEmpty    } {IsEmpty D} end
-      proc {DictRemove  K  } {Remove D K} end
-      fun  {DictMember  K  } {Member D K} end
-      fun  {DictClone      } {DictPack {Clone D}} end
-      fun  {DictToRecord L } {ToRecord L D} end
-   in
-      dictionary(
-         get      : DictGet
-         put      : DictPut
-         condGet  : DictCondGet
-         reset    : DictReset
-         keys     : DictKeys
-         items    : DictItems
-         entries  : DictEntries
-         isEmpty  : DictIsEmpty
-         remove   : DictRemove
-         member   : DictMember
-         clone    : DictClone
-         toRecord : DictToRecord)
-   end
-   fun {New} {DictPack {NewDictionary}} end
-   fun {NewFromRecord R} {DictPack {ToDict R}} end
+declare Days Months PrettyPrint
+Days = {Dictionary.new}
+{Dictionary.put Days 1 sunday}
+{Dictionary.put Days 2 monday}
+{Dictionary.put Days 3 tuesday}
+{Dictionary.put Days 4 wednesday}
+{Dictionary.put Days 5 thursday}
+{Dictionary.put Days 6 friday}
+{Dictionary.put Days 7 saturday}
+Months = {Dictionary.new}
+{Dictionary.put Months 1 january}
+{Dictionary.put Months 2 february}
+{Dictionary.put Months 3 march}
+{Dictionary.put Months 4 april}
+{Dictionary.put Months 5 may}
+{Dictionary.put Months 6 june}
+{Dictionary.put Months 7 july}
+{Dictionary.put Months 8 august}
+{Dictionary.put Months 9 september}
+{Dictionary.put Months 10 october}
+{Dictionary.put Months 11 november}
+{Dictionary.put Months 12 december}
+proc {PrettyPrint DD MM}
+   {Browse [{Dictionary.get Days DD}
+	    {Dictionary.get Months MM}]}
 end
+{PrettyPrint 3 12}
