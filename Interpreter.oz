@@ -1,8 +1,7 @@
 \insert 'Unify.oz'
 
-declare SStack Push Pop SAS
+declare SStack Push Pop
 SStack = {NewCell nil}
-SAS = {Dictionary.new}
 
 proc {Push Cont Stack}
    Stack := Cont|@Stack
@@ -17,21 +16,15 @@ fun {Pop Stack}
    end
 end
 
-declare AST Env Stmt SASKey AddSASKey Bind
+declare AST Env Stmt Bind
 AST = [var ident(x) [var ident(y) [var ident(x) [nop]]]]
 
 Env = {Dictionary.new}
 {Push tuple(sem:AST env:Env) SStack}
 Stmt = {NewCell nil}
-SASKey = {NewCell 0}
 
-fun {AddSASKey}
-   SASKey := @SASKey + 1
-   @SASKey
-end
-
-proc {Bind X Y env}
-   {Unify X Y env}
+proc {Bind X Y Env}
+   {Unify X Y Env}
 end
 
 declare
