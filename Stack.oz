@@ -1,4 +1,4 @@
-functor
+functor 
 export
    New NewFromList
 prepare
