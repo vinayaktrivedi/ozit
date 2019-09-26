@@ -16,15 +16,52 @@ fun {Pop Stack}
    end
 end
 
-declare AST Env Stmt Bind
+declare AST Env Stmt Bind CalClo
 AST = [var ident(x) [ [var ident(y) [var ident(x) [bind ident(x) literal(10)]]] [bind ident(x) literal(10)] ]  ]
 
 Env = {Dictionary.new}
 {Push tuple(sem:AST env:Env) SStack}
 Stmt = {NewCell nil}
 
+fun {FindFV Stmt Env BV FV}
+   case Stmt
+   of H|T then {FindFV H Env BV {FindFV T Env BV FV}}   
+   [] ident(X) then
+      if {List.member ident(X) BV} then FV
+      else
+	 if {Dictionary.member FV X} then FV
+	 else
+	    if {Dictionary.member Env X} then
+	       {Dictionary.put FV X {Dictionary.get Env X}}
+	    else nil
+	    end
+	 end
+      end	    
+   else FV
+   end   
+end
+
+fun {CalClo Stmt Env BV FV}
+   case Stmt
+   of nil then FV
+   [] [nop] then FV
+   [] [var ident(X) S] then {CalClo S Env ident(X)|BV FV}
+   [] [bind X Y] then {FindFV X Env BV {FindFV Y Env BV FV}}
+   [] H|T then {CalClo H Env BV {CalClo T Env BV FV}}
+   end
+end
+
 proc {Bind X Y Env}
-   {Unify X Y Env}
+   case Y
+   of [proce Xs S] then
+      local Val CDict Free in
+	 CDict = {Dictionary.new}
+	 Free = {CalClo S Env Xs CDict}
+	 Val = [proce Xs S Free]
+	 {Unify X Val Env}
+      end
+   else {Unify X Y Env}
+   end
 end
 
 declare
