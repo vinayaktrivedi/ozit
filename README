@@ -4,6 +4,6 @@
 
 #We have NOT handled the cases where AST of program is itself wrong, or not according to the specifications. 
 
-#We have not imported System.Show explicitly, since it works fine in Interactive mode. For running through terminal, we need to Import it to proper compilation. 
+#We have run the code in Interactive mode without importing System.Show explicitly. For running through terminal, it needs to be imported for proper compilation. 
 
 #For Taking the Input AST, paste the valid AST in Input.oz file provided in the Directory, and run Interpreter.oz. 
