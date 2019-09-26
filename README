@@ -1,0 +1,9 @@
+#The main code is in Interpreter.oz, which requires files ProcessRecords.oz, SingleAssignmentStore.oz, Input.oz and Unify.oz to be in the same directory. 
+
+#We have answered the Questions 1-5. 
+
+#We have NOT handled the cases where AST of program is itself wrong, or not according to the specifications. 
+
+#We have not imported System.Show explicitly, since it works fine in Interactive mode. For running through terminal, we need to Import it to proper compilation. 
+
+#For Taking the Input AST, paste the valid AST in Input.oz file provided in the Directory, and run Interpreter.oz. 
