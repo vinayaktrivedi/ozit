@@ -64,7 +64,7 @@ proc {Bind X Y Env}
    CDict = {Dictionary.new}
    Free = {CalClo S Env Xs CDict}
    if Free \= nil then
-      {Show ['Free' {Dictionary.entries Free}]}
+      {Show ['Free' X {Dictionary.entries Free}]}
    end
    Val = ['proc' Xs S Free]
    {Unify X Val Env}
