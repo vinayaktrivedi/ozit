@@ -4,6 +4,8 @@
 
 #We have NOT handled the cases where AST of program is itself wrong, or not according to the specifications. 
 
-#We have run the code in Interactive mode without importing System.Show explicitly. For running through terminal, it needs to be imported for proper compilation. 
+#In Oz Browser, Options, Buffer: We have set Buffer Size "Large"; and in Options, Display Parameters: We have set Browse Limit "Large" and Expansion Increment "Large" in order to show the complete Output for large ASTs. (The limits may be further increased if more display space is required).
+
+#We have run the code in Interactive mode using Browse without importing Browser.Browse explicitly.
 
 #For Taking the Input AST, paste the valid AST in Input.oz file provided in the Directory, and run Interpreter.oz. 

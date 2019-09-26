@@ -60,7 +60,7 @@ proc {Bind X Y Env}
 	 CDict = {Dictionary.new}
 	 Free = {CalClo S Env Xs CDict}
 	 if Free \= nil then
-	    {Show ['Free' X {Dictionary.entries Free}]}
+	    {Browse ['Free Variables:' X {Dictionary.entries Free}]}
 	 end
 	 Val = ['proc' Xs S Free]
 	 {Unify X Val Env}
@@ -69,17 +69,23 @@ proc {Bind X Y Env}
    end
 end
 
+declare Line
+
 Stmt = {NewCell nil}
+Line = {NewCell 1}
 
 declare
 proc {Execute}
-   {Show ['SStack' @SStack]}
-   {Show ['SAS' {Dictionary.entries SAS}]}
+   {Browse '-------------------------------------------------------------------------'}
+   {Browse @Line}
+   Line := @Line + 1
+   {Browse ['Semantic Stack:' @SStack]}
+   {Browse ['Single Assignment Store:' {Dictionary.entries SAS}]}
    Stmt:={Pop SStack}
    case @Stmt
    of nil then skip
    else
-      {Show ['Environment' {Dictionary.entries @Stmt.env}]}
+      {Browse ['Environment:' {Dictionary.entries @Stmt.env}]}
       %{Browse {Dictionary.entries @Stmt.env}}
       case @Stmt.sem
       of [nop] then {Execute}
