@@ -1,5 +1,6 @@
 \insert 'Unify.oz'
 \insert 'Input.oz'
+\insert 'SingleAssignmentStore.oz'
 
 declare SStack Push Pop
 SStack = {NewCell nil}
@@ -132,8 +133,35 @@ proc {Execute}
 	 {Push tuple(sem:S env:{Dictionary.clone @Stmt.env}) SStack}
 	 {Execute}
       [] [bind X Y] then
+	 case Y
+	 of [sum ident(Y) ident(Z)] then
+	    if {Dictionary.member @Stmt.env Y} andthen {Dictionary.member @Stmt.env Z} then
+	       case {RetrieveFromSAS @Stmt.env.Y}
+	       of literal(Num1) then
+		  case {RetrieveFromSAS @Stmt.env.Z}
+		  of literal(Num2) then {Bind X literal(Num1+Num2) @Stmt.env}
+		  else raise sumValNotBound(Z) end
+		  end
+	       else raise sumValNotBound(Y) end
+	       end
+	    else raise sumValNotDefined() end
+	    end
+	 [] [product ident(Y) ident(Z)] then
+	    if {Dictionary.member @Stmt.env Y} andthen {Dictionary.member @Stmt.env Z} then
+	       case {RetrieveFromSAS @Stmt.env.Y}
+	       of literal(Num1) then
+		  case {RetrieveFromSAS @Stmt.env.Z}
+		  of literal(Num2) then {Bind X literal(Num1*Num2) @Stmt.env}
+		  else raise productValNotBound(Z) end
+		  end
+	       else raise productValNotBound(Y) end
+	       end
+	    else raise productValNotDefined() end
+	    end
+	 else {Bind X Y @Stmt.env}
+	 end
          %{Browse {Dictionary.entries @Stmt.env}}
-	 {Bind X Y @Stmt.env}
+	 %{Bind X Y @Stmt.env}
 	 {Execute}
       [] [match ident(X) P S1 S2] then
 	 if {Dictionary.member @Stmt.env X}==true then
