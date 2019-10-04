@@ -43,6 +43,21 @@ fun {FindFV Stmt Env BV FV}
    end   
 end
 
+proc {AddPatternVars Pattern Env}
+   case Pattern of
+      H|T then
+      case H.2.1 of
+	 ident(X) then
+	 if {Dictionary.member Env X} == false then {Dictionary.put Env X {AddSASKey}}
+	 else skip
+	 end
+      else skip
+      end
+   else skip
+   end
+end
+
+      
 fun {CalClo Stmt Env BV FV}
    case Stmt
    of nil then FV
@@ -66,6 +81,28 @@ proc {Bind X Y Env}
 	 {Unify X Val Env}
       end
    else {Unify X Y Env}
+   end
+end
+
+proc {MakeProcEnv FreeEnv StmtEnv Xs Xp}
+   case Xs
+   of H|T then
+      local ProcArg Tail in
+	 ident(ProcArg)|Tail = Xp
+	 case H
+	 of ident(X) then
+	    if {Dictionary.member StmtEnv X}==true then
+	       {Dictionary.put FreeEnv ProcArg StmtEnv.X}
+	       {MakeProcEnv FreeEnv StmtEnv T Tail}
+	    else raise argumentNotDeclared(X) end
+	    end
+	 else
+	    {Dictionary.put FreeEnv ProgArg {AddSASKey}}
+	    {Bind ident(ProgArg) H FreeEnv}
+	    {MakeProcEnv FreeEnv StmtEnv T Tail}
+	 end
+      end
+   else skip
    end
 end
 
@@ -98,6 +135,51 @@ proc {Execute}
          %{Browse {Dictionary.entries @Stmt.env}}
 	 {Bind X Y @Stmt.env}
 	 {Execute}
+      [] [match ident(X) P S1 S2] then
+	 if {Dictionary.member @Stmt.env X}==true then
+	    local CaseDict in
+	       CaseDict = {Dictionary.clone @Stmt.env}
+	       case P
+	       of [record literal(N) L] then
+		  {AddPatternVars L CaseDict}
+		  try
+		     {Bind Var P CaseDict}
+		     {Push tuple(sem:S1 env:CaseDict) SStack}
+		     {Execute}
+		  catch E then
+		     {Push tuple(sem:S2 env:{Dictionary.clone @Stmt.env}) SStack}
+		     {Execute}
+		  end
+	       else
+		  raise patternNotRecord(P) end
+	       end
+	    end
+	 else raise varNotFoundInEnv(X) end
+	 end
+      [] [apply ident(F) Xs] then
+	 if {Dictionary.member @Stmt.env F}==true then
+	    local ProcValue in
+	       ProcValue = {RetrieveFromSAS {Dictionary.get @Stmt.env F}}
+	       case ProcValue
+	       of ['proc' Xp StmtOfProc FreeOfProc] then
+		  if {Length Xp} == {Length Xs} then
+		     local NewEnv in
+			NewEnv = {Dictionary.clone FreeOfProc}
+			try
+			   {MakeProcEnv NewEnv @Stmt.env Xs Xp}
+			   {Push tuple(sem:StmtOfProc env:NewEnv) SStack}
+			catch E then
+			   raise argumentNotDeclared(Xs) end
+			end
+		     end
+		  else
+		     raise arityDifferentForProc(ProcValue) end
+		  end
+	       else raise notaProcedureValue(ProcValue) end
+	       end
+	    end
+	 else raise varNotFoundInEnv(F) end
+	 end
       [] [conditional ident(X) S1 S2] then
 	 if {Dictionary.member @Stmt.env X} then
 	    local Val in
@@ -112,8 +194,6 @@ proc {Execute}
 	 else
 	    raise varNotFoundInEnv(X) end
 	 end
-      [] [match ident(X) P S1 S2] then skip
-      [] [apply ident(F) Xs] then skip
       [] S1|S2 then
 	 case S2
 	 of nil then skip
