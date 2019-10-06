@@ -10,7 +10,7 @@ fun {AddSASKey}
 end
 
 fun { RetrieveFromSAS SASKey}
-	local Val in 
+	local Val in
 		Val = {Dictionary.get SAS SASKey}
 		case Val of
 			reference(Y) then {RetrieveFromSAS Y}

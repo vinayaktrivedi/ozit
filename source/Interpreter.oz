@@ -1,6 +1,6 @@
 \insert 'Unify.oz'
 \insert 'Input.oz'
-\insert 'SingleAssignmentStore.oz'
+%\insert 'SingleAssignmentStore.oz'
 
 declare SStack Push Pop
 SStack = {NewCell nil}
