@@ -49,7 +49,7 @@ proc {AddPatternVars Pattern Env}
       H|T then
       case H.2.1 of
 	 ident(X) then
-	 if {Dictionary.member Env X} == false then {Dictionary.put Env X {AddSASKey}}
+	 if {Dictionary.member Env X} == false then {Dictionary.put Env X {AddSASKey}} {AddPatternVars T Env}
 	 else skip
 	 end
       else skip
@@ -175,6 +175,7 @@ proc {Execute}
 		     {Push tuple(sem:S1 env:CaseDict) SStack}
 		     {Execute}
 		  catch E then
+		     %{Browse E}
 		     {Push tuple(sem:S2 env:{Dictionary.clone @Stmt.env}) SStack}
 		     {Execute}
 		  end
