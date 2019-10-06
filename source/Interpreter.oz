@@ -98,8 +98,8 @@ proc {MakeProcEnv FreeEnv StmtEnv Xs Xp}
 	    else raise argumentNotDeclared(X) end
 	    end
 	 else
-	    {Dictionary.put FreeEnv ProgArg {AddSASKey}}
-	    {Bind ident(ProgArg) H FreeEnv}
+	    {Dictionary.put FreeEnv ProcArg {AddSASKey}}
+	    {Bind ident(ProcArg) H FreeEnv}
 	    {MakeProcEnv FreeEnv StmtEnv T Tail}
 	 end
       end
@@ -171,7 +171,7 @@ proc {Execute}
 	       of [record literal(N) L] then
 		  {AddPatternVars L CaseDict}
 		  try
-		     {Bind Var P CaseDict}
+		     {Bind ident(X) P CaseDict}
 		     {Push tuple(sem:S1 env:CaseDict) SStack}
 		     {Execute}
 		  catch E then
