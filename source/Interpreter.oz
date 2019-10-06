@@ -65,6 +65,50 @@ fun {CalClo Stmt Env BV FV}
    [] [nop] then FV
    [] [var ident(X) S] then {CalClo S Env ident(X)|BV FV}
    [] [bind X Y] then {FindFV X Env BV {FindFV Y Env BV FV}}
+   [] [conditional ident(X) S1 S2] then
+      if {List.member ident(X) BV} then {CalClo S2 Env BV {CalClo S1 Env BV FV}}
+      else
+	 if {Dictionary.member FV X} then {CalClo S2 Env BV {CalClo S1 Env BV FV}}
+	 else
+	    if {Dictionary.member Env X} then
+	       {Dictionary.put FV X {Dictionary.get Env X}}
+	       {CalClo S2 Env BV {CalClo S1 Env BV FV}}
+	    else raise varNotFound(X) end
+	    end
+	 end
+      end
+   [] [match ident(X) P S1 S2] then
+      local NewEnv in
+	 NewEnv = {Dictionary.clone Env}
+	 if {List.member ident(X) BV} then
+	    {AddPatternVars P.2.2.1 NewEnv}
+	    {CalClo S1 NewEnv BV {CalClo S2 NewEnv BV FV}}
+	 else
+	    if {Dictionary.member FV X} then
+	       {AddPatternVars P.2.2.1 NewEnv}
+	       {CalClo S1 NewEnv BV {CalClo S2 NewEnv BV FV}}
+	    else
+	       if {Dictionary.member Env X} then
+		  {Dictionary.put FV X {Dictionary.get Env X}}
+		  {AddPatternVars P.2.2.1 NewEnv}
+		  {CalClo S1 NewEnv BV {CalClo S2 NewEnv BV FV}}
+	       else raise varNotFound(X) end
+	       end
+	    end
+	 end
+      end
+   [] apply|ident(X)|Xs then
+      if {List.member ident(X) BV} then {FindFV Xs Env BV FV}
+      else
+	 if {Dictionary.member FV X} then {FindFV Xs Env BV FV}
+	 else
+	    if {Dictionary.member Env X} then
+	       {Dictionary.put FV X {Dictionary.get Env X}}
+	       {FindFV Xs Env BV FV}
+	    else raise varNotFound(X) end
+	    end
+	 end
+      end
    [] H|T then {CalClo H Env BV {CalClo T Env BV FV}}
    end
 end
@@ -104,6 +148,31 @@ proc {MakeProcEnv FreeEnv StmtEnv Xs Xp}
 	 end
       end
    else skip
+   end
+end
+
+declare
+fun {InList L X}
+   case L
+   of nil then false
+   [] X1|Xr then
+      if X1.1==X.1 then
+	 true
+      else
+	 {InList Xr X}
+      end
+   end
+end
+
+declare
+fun {Subsets L1 L2}
+   case L1
+   of nil then true
+   [] X|Xr then
+      if {InList L2 X} then
+	 {Subsets Xr L2}
+      else false
+      end
    end
 end
 
@@ -165,19 +234,23 @@ proc {Execute}
 	 {Execute}
       [] [match ident(X) P S1 S2] then
 	 if {Dictionary.member @Stmt.env X}==true then
-	    local CaseDict in
+	    local CaseDict XVal in
 	       CaseDict = {Dictionary.clone @Stmt.env}
+	       XVal = {RetrieveFromSAS {Dictionary.get @Stmt.env X}}
 	       case P
 	       of [record literal(N) L] then
 		  {AddPatternVars L CaseDict}
-		  try
-		     {Bind ident(X) P CaseDict}
-		     {Push tuple(sem:S1 env:CaseDict) SStack}
-		     {Execute}
-		  catch E then
-		     %{Browse E}
-		     {Push tuple(sem:S2 env:{Dictionary.clone @Stmt.env}) SStack}
-		     {Execute}
+		  case XVal
+		  of [record literal(M) K] then
+		     if (N == M andthen {Length L} == {Length K}) andthen {Subsets L K} then
+			{Push tuple(sem:S1 env:CaseDict) SStack}
+			{Execute}
+		     else
+			{Push tuple(sem:S2 env:{Dictionary.clone @Stmt.env}) SStack}
+			{Execute}
+		     end
+		  else
+		     raise identNotRecord(X) end
 		  end
 	       else
 		  raise patternNotRecord(P) end
@@ -185,18 +258,20 @@ proc {Execute}
 	    end
 	 else raise varNotFoundInEnv(X) end
 	 end
-      [] [apply ident(F) Xs] then
+      [] apply|ident(F)|Xs then
 	 if {Dictionary.member @Stmt.env F}==true then
 	    local ProcValue in
 	       ProcValue = {RetrieveFromSAS {Dictionary.get @Stmt.env F}}
 	       case ProcValue
 	       of ['proc' Xp StmtOfProc FreeOfProc] then
+		  {Browse [Xp StmtOfProc FreeOfProc]}
 		  if {Length Xp} == {Length Xs} then
 		     local NewEnv in
 			NewEnv = {Dictionary.clone FreeOfProc}
 			try
 			   {MakeProcEnv NewEnv @Stmt.env Xs Xp}
 			   {Push tuple(sem:StmtOfProc env:NewEnv) SStack}
+			   {Execute}
 			catch E then
 			   raise argumentNotDeclared(Xs) end
 			end
@@ -223,6 +298,7 @@ proc {Execute}
 	 else
 	    raise varNotFoundInEnv(X) end
 	 end
+	 {Execute}
       [] S1|S2 then
 	 case S2
 	 of nil then skip

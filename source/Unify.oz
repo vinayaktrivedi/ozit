@@ -70,17 +70,21 @@ in
 	    case Exp2
 	    of equivalence(Y) then {BindRefToKeyInSAS X Y}
 	    else {BindValueToKeyInSAS X Exp2} end
+	 [] reference(X) then
+        {UnifyRecursive {RetrieveFromSAS X} Exp2 Unifications}
 	 [] literal(X) then
 	    case Exp2
 	    of equivalence(_) then
 	       {UnifyRecursive Exp2 Exp1 Unifications}
 	    [] literal(!X) then skip
+	    [] reference(Y) then {UnifyRecursive Exp1 {RetrieveFromSAS Y} Unifications}
 	    else raise incompatibleTypes(Exp1 Exp2) end
 	    end
 	 [] record | L | Pairs1 then % not label(L)
 	    case Exp2
 	    of equivalence(_) then
 	       {UnifyRecursive Exp2 Exp1 Unifications}
+	    [] reference(Y) then {UnifyRecursive Exp1 {RetrieveFromSAS Y} Unifications}
 	    [] record|!L|Pairs2 then % recursively unify
 	       Canon1 = {Canonize Pairs1.1}
 	       Canon2 = {Canonize Pairs2.1}
