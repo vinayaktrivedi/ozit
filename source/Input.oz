@@ -22,3 +22,6 @@ declare AST
 %AST = [var ident(x) [[var ident(y) [var ident(d) [[bind ident(y) literal(2)] [bind ident(d) literal(3)] [bind ident(x) ['proc' [ident(k) ident(a)] [conditional ident(k) [bind ident(a) ident(y)][bind ident(a) ident(d)]]]]]]] [var ident(y) [var ident(b) [[bind ident(y) literal(true)] [apply ident(x) ident(y) ident(b)]]]]]]
 
 %AST = [var ident(x) [var ident(y) [[bind ident(x) [record literal(map) [[literal(name) literal(10)][literal(2) literal(14)]]]] [match ident(x) [record literal(map) [[literal(name) ident(a)] [literal(3) ident(b)]]] [bind ident(y) literal(10)] [match ident(x) [record literal(map) [[literal(name) ident(c)] [literal(2) ident(d)]]] [bind ident(y) literal(20)] [bind ident(y) literal(30)]]]]]]
+
+
+AST = [var ident(x) [var ident(y) [[bind ident(y) literal(100)] [bind ident(x) [record literal(rr) [[literal(a) literal(10)] [literal(b) literal(20)]]]] [match ident(x) [record literal(rr) [[literal(a) ident(z)] [literal(b) ident(y)]]] [bind ident(y) literal(20)] [bind ident(y) literal(100)] ] ] ]]
