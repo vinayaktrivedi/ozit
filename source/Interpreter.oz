@@ -49,9 +49,8 @@ proc {AddPatternVars Pattern Env}
       H|T then
       case H.2.1 of
 	 ident(X) then
-	 if {Dictionary.member Env X} == false then {Dictionary.put Env X {AddSASKey}} {AddPatternVars T Env}
-	 else skip
-	 end
+	 {Dictionary.put Env X {AddSASKey}}
+	 {AddPatternVars T Env}
       else skip
       end
    else skip
@@ -82,16 +81,16 @@ fun {CalClo Stmt Env BV FV}
 	 NewEnv = {Dictionary.clone Env}
 	 if {List.member ident(X) BV} then
 	    {AddPatternVars P.2.2.1 NewEnv}
-	    {CalClo S1 NewEnv BV {CalClo S2 NewEnv BV FV}}
+	    {CalClo S1 NewEnv BV {CalClo S2 Env BV FV}}
 	 else
 	    if {Dictionary.member FV X} then
 	       {AddPatternVars P.2.2.1 NewEnv}
-	       {CalClo S1 NewEnv BV {CalClo S2 NewEnv BV FV}}
+	       {CalClo S1 NewEnv BV {CalClo S2 Env BV FV}}
 	    else
 	       if {Dictionary.member Env X} then
 		  {Dictionary.put FV X {Dictionary.get Env X}}
 		  {AddPatternVars P.2.2.1 NewEnv}
-		  {CalClo S1 NewEnv BV {CalClo S2 NewEnv BV FV}}
+		  {CalClo S1 NewEnv BV {CalClo S2 Env BV FV}}
 	       else raise varNotFound(X) end
 	       end
 	    end
@@ -152,25 +151,26 @@ proc {MakeProcEnv FreeEnv StmtEnv Xs Xp}
 end
 
 declare
-fun {InList L X}
+fun {InList L X Env}
    case L
    of nil then false
    [] X1|Xr then
       if X1.1==X.1 then
+	 {Bind X1.2.1 X.2.1 Env}
 	 true
       else
-	 {InList Xr X}
+	 {InList Xr X Env}
       end
    end
 end
 
 declare
-fun {Subsets L1 L2}
+fun {Subsets L1 L2 Env}
    case L1
    of nil then true
    [] X|Xr then
-      if {InList L2 X} then
-	 {Subsets Xr L2}
+      if {InList L2 X Env} then
+	 {Subsets Xr L2 Env}
       else false
       end
    end
@@ -242,7 +242,7 @@ proc {Execute}
 		  {AddPatternVars L CaseDict}
 		  case XVal
 		  of [record literal(M) K] then
-		     if (N == M andthen {Length L} == {Length K}) andthen {Subsets L K} then
+		     if (N == M andthen {Length L} == {Length K}) andthen {Subsets L K CaseDict} then
 			{Push tuple(sem:S1 env:CaseDict) SStack}
 			{Execute}
 		     else
@@ -264,7 +264,7 @@ proc {Execute}
 	       ProcValue = {RetrieveFromSAS {Dictionary.get @Stmt.env F}}
 	       case ProcValue
 	       of ['proc' Xp StmtOfProc FreeOfProc] then
-		  {Browse [Xp StmtOfProc FreeOfProc]}
+		  %{Browse [Xp StmtOfProc FreeOfProc]}
 		  if {Length Xp} == {Length Xs} then
 		     local NewEnv in
 			NewEnv = {Dictionary.clone FreeOfProc}
@@ -273,7 +273,7 @@ proc {Execute}
 			   {Push tuple(sem:StmtOfProc env:NewEnv) SStack}
 			   {Execute}
 			catch E then
-			   raise argumentNotDeclared(Xs) end
+			   raise error(E) end
 			end
 		     end
 		  else

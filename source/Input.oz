@@ -24,4 +24,12 @@ declare AST
 %AST = [var ident(x) [var ident(y) [[bind ident(x) [record literal(map) [[literal(name) literal(10)][literal(2) literal(14)]]]] [match ident(x) [record literal(map) [[literal(name) ident(a)] [literal(3) ident(b)]]] [bind ident(y) literal(10)] [match ident(x) [record literal(map) [[literal(name) ident(c)] [literal(2) ident(d)]]] [bind ident(y) literal(20)] [bind ident(y) literal(30)]]]]]]
 
 
-AST = [var ident(x) [var ident(y) [[bind ident(y) literal(100)] [bind ident(x) [record literal(rr) [[literal(a) literal(10)] [literal(b) literal(20)]]]] [match ident(x) [record literal(rr) [[literal(a) ident(z)] [literal(b) ident(y)]]] [bind ident(y) literal(20)] [bind ident(y) literal(100)] ] ] ]]
+%AST = [var ident(x) [var ident(y) [[bind ident(x) [record literal(rr) [[literal(a) literal(10)] [literal(b) literal(20)]]]] [match ident(x) [record literal(rr) [[literal(a) ident(z)] [literal(b) ident(h)]]] [bind ident(y) ident(h)] [bind ident(y) literal(100)] ] ] ]]
+
+%AST = [var ident(x) [[var ident(y) [var ident(d) [[bind ident(y) literal(2)] [bind ident(d) literal(3)] [bind ident(x) ['proc' [ident(k) ident(a)] [conditional ident(k) [bind ident(a) [sum ident(d) ident(y)]] [bind ident(a) [product ident(d) ident(y)]]]]]]]] [var ident(y) [var ident(b) [[bind ident(y) literal(true)] [apply ident(x) ident(y) ident(b)]]]]]]
+
+%AST = [var ident(r) [var ident(x) [var ident(y) [var ident(z) [[bind ident(z) ['proc' [ident(c)] [match ident(x) [record literal(val) [[literal(left) ident(x)][literal(right) ident(y)]]] [bind ident(c) [sum ident(x) ident(y)]] [bind ident(c) [sum ident(y) ident(y)]]]]] [bind ident(x) [record literal(val) [[literal(left) literal(10)] [literal(riht) literal(20)]]]] [bind ident(y) literal(30)] [apply ident(z) ident(r)]]]]]]
+
+AST = [var ident(x) [var ident(p1) [[bind ident(p1) ['proc' [ident(y)] [var ident(p2) [[bind ident(p2) ['proc' [ident(z)] 
+    [conditional ident(z) [bind ident(y) [product ident(x) ident(x)] ] [bind ident(y) ident(z)]]]] [var ident(w) [[bind ident(w) literal(false)]
+    [apply ident(p2) ident(w)]]]]]]] [bind ident(x) literal(10)] [var ident(x) [apply ident(p1) ident(x)]]]]]
